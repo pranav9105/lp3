@@ -1,0 +1,226 @@
+def iterative(n):
+    series = []
+    a, b = 0, 1
+    series.append(a)
+    series.append(b)
+    for i in range(2,n):
+        c = a+b
+        series.append(c)
+        a = b
+        b = c
+    return series
+
+def recursive(n):
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return recursive(n-1) + recursive(n-2)
+
+n = int(input("Enter a number : "))
+if n < 0:
+    print("Can't process -ve number")
+else:
+    print(iterative(n))
+    print("\n")
+    recursive_fib = [recursive(i) for i in range(n)]
+    print(recursive_fib)
+
+
+
+
+
+# What is the Fibonacci Series?
+# Fibonacci Series is a sequence of numbers in which each number is the sum of the previous two numbers.
+
+# It starts with 0 and 1.
+
+# Example:
+# 0, 1, 1, 2, 3, 5, 8, 13, 21, 34
+
+
+# Logic:
+# - 0 + 1 = 1
+# - 1 + 1 = 2
+# - 1 + 2 = 3
+# - 2 + 3 = 5
+# - 3 + 5 = 8
+# There are two methods in your program:
+# 1. Iterative method (using loops).
+# 2. Recursive method (using function calling itself).
+# 2. Logic with example
+# Suppose the input is n = 7.
+
+# We need to print the first 7 Fibonacci numbers.
+
+# A. Iterative method
+
+# Uses a for loop.
+
+# Initially:
+# a = 0b = 1
+
+
+
+# Calculate the next number:
+# c = a + b
+
+
+
+# Then update:
+# a = bb = c
+
+
+
+# Repeat until 7 numbers are generated.
+
+# B. Recursive method
+
+# Uses a function that calls itself.
+
+# Formula:
+# \[
+# F(n) = F(n-1) + F(n-2)
+# \]
+
+# Base conditions:
+# \[
+# F(0)=0
+# \]
+
+# \[
+# F(1)=1
+# \]
+
+# For example:
+# F(4) = F(3) + F(2)
+#      = 2 + 1
+#      = 3
+
+
+# 3. What input should you enter?
+# Run your program:
+# Enter a number : 7
+
+
+# Here, 7 means you want the first 7 Fibonacci numbers.
+# 4. Expected output
+# [0, 1, 1, 2, 3, 5, 8]
+
+
+# [0, 1, 1, 2, 3, 5, 8]
+
+
+# Both methods give the same result
+# 5. Explanation of your code
+# Part 1: Iterative function
+# def iterative(n):    series = []    a, b = 0, 1
+
+
+
+# - Creates an empty list.
+# - Initializes the first two Fibonacci numbers.
+# series.append(a)series.append(b)
+
+
+
+# Adds 0 and 1 to the list.
+# for i in range(2,n):    c = a+b    series.append(c)    a = b    b = c
+
+
+
+# - Calculates the next number.
+# - Adds it to the list.
+# - Updates a and b.
+# - Repeats until n numbers are generated.
+# return series
+
+
+
+# Returns the Fibonacci series.
+# Part 2: Recursive function
+# def recursive(n):    if n == 0:        return 0    elif n == 1:        return 1
+
+
+
+# These are called base conditions. They stop recursion.
+# else:    return recursive(n-1) + recursive(n-2)
+
+
+
+# Calls the same function for the previous two numbers and adds their results.
+# Part 3: Main program
+# n = int(input("Enter a number : "))
+
+
+
+# Takes the number of terms from the user.
+# if n < 0:    print("Can't process -ve number")
+
+
+
+# Checks whether the input is negative.
+# else:    print(iterative(n))
+
+
+
+# Displays the iterative result.
+# recursive_fib = [recursive(i) for i in range(n)]print(recursive_fib)
+
+
+
+# Calls the recursive function for every number from 0 to n-1 and prints the series.
+# 6. Difference between Iterative and Recursive
+# Iterative	Recursive
+# Uses loops.	Uses function calling itself.
+# Uses for or while.	Uses recursion.
+# Generally faster.	Generally slower.
+# Uses less memory.	Uses more memory due to function calls.
+# Time complexity O(n).	Time complexity O(2ⁿ).
+
+# 7. Important viva questions
+# Question	Answer
+# What is Fibonacci Series?	A series where each number is the sum of the previous two numbers.
+# What are the first two numbers?	0 and 1.
+# What is recursion?	A function calling itself.
+# What is iteration?	Repeating statements using loops.
+# What is a base condition?	A condition that stops recursion.
+# What is the Fibonacci formula?	F(n) = F(n-1) + F(n-2).
+# Which method is faster?	Iterative method.
+# What is the iterative time complexity?	O(n).
+# What is the recursive time complexity?	O(2ⁿ) for this simple recursive implementation.
+# What happens if there is no base condition?	Recursion may continue indefinitely until a recursion error occurs.
+
+# 8. Important correction in your code
+# Your iterative function has a small issue when n = 0 or n = 1.
+
+# Currently:
+# series.append(a)series.append(b)
+
+
+
+# It always adds two numbers, even when the user asks for zero or one term.
+
+# You can correct it like this:
+# def iterative(n):    series = []    a, b = 0, 1    for i in range(n):        series.append(a)        a, b = b, a+b    return series
+
+
+
+# Now it works correctly for all non-negative inputs.
+# 9. Important points to remember for viva
+# 1. Fibonacci starts with 0 and 1.
+# 2. Each next number is the sum of the previous two.
+# 3. Iterative uses loops.
+# 4. Recursive uses a function calling itself.
+# 5. Base conditions are n == 0 and n == 1.
+# 6. Iterative is more efficient than simple recursion.
+# One-line viva answer:
+
+# "Fibonacci Series is a sequence where each term is the sum of the previous two terms. It can be generated using iteration with loops or recursion using a function calling itself."
+
+# One important question your examiner might ask:
+
+# Why is iterative Fibonacci faster than recursive Fibonacci?
+
+# Answer: Iterative Fibonacci calculates each term only once, whereas simple recursive Fibonacci recalculates the same terms multiple times.

@@ -1,0 +1,284 @@
+import heapq
+from collections import Counter
+
+class Node:
+    def __init__(self, char, freq):
+        self.char = char
+        self.freq = freq
+        self.left = None
+        self.right = None
+
+def huffman_tree(frequency):
+    heap = []
+    count = 0
+    for char, freq in frequency:
+        node = Node(char, freq)
+        heapq.heappush(heap, (freq, count, node))
+        count += 1
+
+    while len(heap) > 1:
+        freq1, _, left = heapq.heappop(heap)
+        freq2, _, right = heapq.heappop(heap)
+        newNode = Node(None, freq1+freq2)
+        newNode.left = left
+        newNode.right = right
+        heapq.heappush(heap, (newNode.freq, count, newNode))
+        count += 1
+
+    return heap[0][2]
+
+def generate_code(root, code, huffman_codes):
+    if root is None:
+        return
+    elif root.char is not None:
+        huffman_codes[root.char] = code if code else "0"
+        return
+    generate_code(root.left, code + "0", huffman_codes)
+    generate_code(root.right, code + "1", huffman_codes)
+
+#main
+frequency = []
+n = int(input("Enter num of distinct chars : "))
+print("Enter char freq :-")
+for i in range(n):
+    char = input()
+    freq = int(input())
+    frequency.append((char, freq))
+
+if frequency is None:
+    print("Can't be empty")
+else:
+    root = huffman_tree(frequency)
+    huffman_codes = {}
+    generate_code(root, "", huffman_codes)
+    for char, code in huffman_codes.items():
+        print(repr(char), ": ", code)
+
+
+
+# . What is Huffman Coding?
+# Huffman Coding is a lossless data compression technique.
+
+# It reduces the number of bits required to store data by assigning:
+# - Short binary codes (0 and 1) to frequently occurring characters.
+# - Longer binary codes to less frequently occurring characters.
+# For example:
+
+# Suppose we have these characters:
+# Character	Frequency
+# A	5
+# B	9
+# C	12
+# D	13
+# E	16
+# F	45
+
+# Here, F occurs 45 times, so it will get a shorter code.
+# 2. Logic of Huffman Coding with example
+# Step 1: Arrange characters according to frequency (smallest first).
+
+# Our frequencies are:
+# A = 5
+# B = 9
+# C = 12
+# D = 13
+# E = 16
+# F = 45
+
+
+# Step 2: Take the two smallest frequencies.
+
+# Take A = 5 and B = 9.
+
+# Add them:
+# 5 + 9 = 14
+
+
+# Combine them into a new node with frequency 14.
+
+# Step 3: Repeat the process.
+
+# Now the frequencies are:
+# C = 12
+# D = 13
+# New Node = 14
+# E = 16
+# F = 45
+
+
+# Take the two smallest:
+# 12 + 13 = 25
+
+
+# Again, combine them.
+
+# Continue until only one node remains.
+
+# Step 4: Assign binary codes.
+# - Left side = 0
+# - Right side = 1
+# When we reach the original character, its path from the root gives its Huffman code.
+
+# For example, the final codes for this input can be:
+# Character	Frequency	Huffman Code
+# A	5	1100
+# B	9	1101
+# C	12	100
+# D	13	101
+# E	16	111
+# F	45	0
+
+# Note: Equivalent Huffman codes may differ depending on how equal-frequency nodes are ordered.
+# 3. What input should you enter in your program?
+# Run your program and enter the following:
+# Sample input
+# Enter num of distinct chars : 6
+# Enter char freq :-
+# A
+# 5
+# B
+# 9
+# C
+# 12
+# D
+# 13
+# E
+# 16
+# F
+# 45
+
+
+#  Copy input
+# 4. Expected output
+# 'A' :  1100
+# 'B' :  1101
+# 'C' :  100
+# 'D' :  101
+# 'E' :  111
+# 'F' :  0
+
+
+# 5. Explanation of your Python code
+# Now let's understand what each part does.
+# Part 1: Import libraries
+# import heapqfrom collections import Counter
+
+
+
+# - heapq: Used to create a min-heap. It helps us get the smallest frequency quickly.
+# - Counter: Counts occurrences of elements, but it is not actually used in your program.
+# Part 2: Node class
+# class Node:    def __init__(self, char, freq):        self.char = char        self.freq = freq        self.left = None        self.right = None
+
+
+
+# Creates a node containing:
+# - char: Character.
+# - freq: Frequency of character.
+# - left: Left child.
+# - right: Right child.
+# Part 3: Build Huffman Tree
+# def huffman_tree(frequency):    heap = []    count = 0
+
+
+
+# Creates an empty min-heap.
+# for char, freq in frequency:    node = Node(char, freq)    heapq.heappush(heap, (freq, count, node))    count += 1
+
+
+
+# Creates nodes and inserts them into the heap according to frequency.
+# while len(heap) > 1:    freq1, _, left = heapq.heappop(heap)    freq2, _, right = heapq.heappop(heap)
+
+
+
+# Removes the two smallest frequency nodes.
+# newNode = Node(None, freq1+freq2)newNode.left = leftnewNode.right = right
+
+
+
+# Creates a new parent node by adding both frequencies.
+# heapq.heappush(heap, (newNode.freq, count, newNode))count += 1
+
+
+
+# Inserts the new node into the heap.
+# return heap[0][2]
+
+
+
+# Returns the root of the Huffman tree.
+# Part 4: Generate Huffman Codes
+# def generate_code(root, code, huffman_codes):
+
+
+
+# This function generates binary codes.
+# if root is None:    return
+
+
+
+# Checks whether the node is empty.
+# elif root.char is not None:    huffman_codes[root.char] = code if code else "0"    return
+
+
+
+# If the node contains a character, stores its binary code.
+# generate_code(root.left, code + "0", huffman_codes)generate_code(root.right, code + "1", huffman_codes)
+
+
+
+# - Goes left and adds 0.
+# - Goes right and adds 1.
+# Part 5: Main program
+# frequency = []n = int(input("Enter num of distinct chars : "))
+
+
+
+# Takes the number of distinct characters.
+# for i in range(n):    char = input()    freq = int(input())    frequency.append((char, freq))
+
+
+
+# Accepts each character and its frequency and stores them in a list.
+# root = huffman_tree(frequency)huffman_codes = {}generate_code(root, "", huffman_codes)
+
+
+
+# Builds the tree and generates Huffman codes.
+# for char, code in huffman_codes.items():    print(repr(char), ": ", code)
+
+
+
+# Displays each character with its binary code.
+
+# 6. Important viva questions and answers
+# Question	Answer
+# What is Huffman Coding?	A lossless data compression technique.
+# What is a Huffman Tree?	A binary tree used to generate Huffman codes.
+# What is a min-heap?	A data structure where the smallest element is at the top.
+# Why do we use heapq?	To efficiently get the two smallest frequencies.
+# What is the left edge?	0
+# What is the right edge?	1
+# What is a leaf node?	A node containing an original character.
+# What is a root node?	The topmost node of a tree.
+# Is Huffman Coding lossy or lossless?	Lossless.
+# What is its purpose?	To reduce storage space using variable-length codes.
+# What is the time complexity?	O(n log n).
+
+# Remember these 4 points for your practical exam:
+# 1. Huffman Coding is used for lossless compression.
+# 2. It uses a greedy algorithm.
+# 3. It uses a min-heap to select the two smallest frequencies.
+# 4. Frequent characters get shorter codes, and less frequent characters get longer codes.
+# One important correction in your code:
+# if frequency is None:
+
+
+
+# This condition does not properly check whether the list is empty. You should use:
+# if not frequency:    print("Can't be empty")
+
+
+
+# Also, Huffman coding requires at least one character to build a tree.

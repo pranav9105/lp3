@@ -1,0 +1,211 @@
+def Knapsack(W, val, weights, n):
+    dp = [[0 for _ in range(W+1)] for _ in range(n+1)]
+    for i in range(1, n+1):
+        for w in range(1, W+1):
+            if weights[i-1] <= w:
+                dp[i][w] = max(dp[i-1][w], val[i-1]+dp[i-1][w-weights[i-1]])
+            else:
+                dp[i-1][w]
+    selected = []
+    w = W
+    for i in range(n, 0, -1):
+        if dp[i][w] != dp[i-1][w]:
+            selected.append(i)
+            w -= weights[i-1]
+
+    print("DP Table -:")
+    for row in dp:
+        print(row)
+    print("Max value = ", dp[n][W])
+    print(selected[::-1])
+
+n = int(input("Enter no. of objects : "))
+print("Enter info as value, weight -:")
+weights = []
+values = []
+for i in range(n):
+    v, w = map(int, input().split())
+    values.append(v)
+    weights.append(w)
+W = int(input("Enter max capacity : "))
+print(weights)
+print(values)
+if n<0 or W<0 or any(w<=0 for w in weights):
+    print("Can't process null weights")
+else:
+    Knapsack(W, values, weights, n)
+
+
+
+#     1. What is the Knapsack Problem?
+# Imagine you have a bag (knapsack) with a maximum capacity of 5 kg.
+
+# You have 3 objects:
+# Object	Value	Weight
+# 1	60	1 kg
+# 2	100	2 kg
+# 3	120	3 kg
+
+# Your task is to select objects so that:
+# - Total weight does not exceed 5 kg.
+# - Total value is maximum.
+# For this example:
+# - Object 1 + Object 2 = Value 160, Weight 3.
+# - Object 1 + Object 3 = Value 180, Weight 4.
+# - Object 2 + Object 3 = Value 220, Weight 5.
+# Maximum value = 220
+# So, we select objects 2 and 3.
+# 2. Logic of 0/1 Knapsack
+# There are two choices for every object:
+# 1. Include the object.
+# 2. Exclude the object.
+# Why is it called 0/1 Knapsack?
+# - 0 means don't select the object.
+# - 1 means select the object.
+# You cannot take half an object.
+
+# We use Dynamic Programming (DP) to solve this problem.
+
+# The main formula is:
+# \[
+# DP[i][w] = \max(\text{Exclude},\text{Include})
+# \]
+
+# Where:
+# - Exclude = dp[i-1][w]
+# - Include = value + dp[i-1][w-weight]
+# If the object's weight is greater than the current capacity, we cannot include it.
+# 3. What input should you enter?
+# Run your program:
+# Enter no. of objects : 3
+# Enter info as value, weight -:
+# 60 1
+# 100 2
+# 120 3
+# Enter max capacity : 5
+
+
+# Important: Enter value first and weight second, separated by a space.
+# 4. Expected output
+# [1, 2, 3]
+# [60, 100, 120]
+
+# DP Table -:
+# [0, 0, 0, 0, 0, 0]
+# [0, 60, 60, 60, 60, 60]
+# [0, 60, 100, 160, 160, 160]
+# [0, 60, 100, 160, 180, 220]
+
+# Max value = 220
+# [2, 3]
+
+
+# The selected objects are numbered starting from 1.
+# 5. Understanding the DP table
+# Let's understand how the table is created.
+
+# Initially, the table contains zeros.
+# [0, 0, 0, 0, 0, 0]
+
+
+# Step 1: Select object 1 (value 60, weight 1).
+# [0, 60, 60, 60, 60, 60]
+
+
+# Step 2: Select object 2 (value 100, weight 2).
+
+# At capacity 3, we can select object 1 and object 2.
+
+# Value = 60 + 100 = 160.
+# [0, 60, 100, 160, 160, 160]
+
+
+# Step 3: Select object 3 (value 120, weight 3).
+
+# At capacity 5, we can select object 2 and object 3.
+
+# Value = 100 + 120 = 220.
+# [0, 60, 100, 160, 180, 220]
+
+
+# Therefore, maximum value = 220.
+# 6. Explanation of your code
+# Part 1: Function and DP table
+# def Knapsack(W, val, weights, n):    dp = [[0 for _ in range(W+1)] for _ in range(n+1)]
+
+
+
+# - W = Maximum capacity.
+# - val = Values of objects.
+# - weights = Weights of objects.
+# - n = Number of objects.
+# - dp = 2D table to store maximum values.
+# Why n+1 and W+1?
+
+# Because we also need a row and column for zero objects and zero capacity.
+# Part 2: Nested loops
+# for i in range(1, n+1):    for w in range(1, W+1):
+
+
+
+# Checks every object and every possible capacity.
+# Part 3: Include or exclude
+# if weights[i-1] <= w:    dp[i][w] = max(        dp[i-1][w],        val[i-1]+dp[i-1][w-weights[i-1]]    )
+
+
+
+# Checks two possibilities:
+# - Don't take the current object.
+# - Take the current object.
+# Whichever gives the maximum value is stored.
+
+# Why i-1?
+
+# Because Python list indexing starts from 0, but our DP table starts from 1 for objects.
+
+# Your else part has a small mistake:
+# else:    dp[i-1][w]
+
+
+
+# It should be:
+# else:    dp[i][w] = dp[i-1][w]
+
+
+
+# Otherwise, the current DP cell remains unchanged. It happens to be zero initially, but the correct logic is to copy the previous row.
+# Part 4: Finding selected objects
+# selected = []w = Wfor i in range(n, 0, -1):    if dp[i][w] != dp[i-1][w]:        selected.append(i)        w -= weights[i-1]
+
+
+
+# This checks backwards through the DP table to find which objects were selected.
+# Part 5: Display output
+# print("DP Table -:")for row in dp:    print(row)print("Max value = ", dp[n][W])print(selected[::-1])
+
+
+
+# - Prints the DP table.
+# - Prints maximum value.
+# - Prints selected object numbers in ascending order.
+# 7. Important viva questions
+# Question	Answer
+# What is Knapsack Problem?	Selecting objects to maximize value within a given capacity.
+# Which technique is used?	Dynamic Programming.
+# What is 0/1 Knapsack?	Each object is either selected or not selected.
+# Why is it called 0/1?	0 means exclude, 1 means include.
+# What is DP?	Dynamic Programming solves problems by storing results of smaller subproblems.
+# What is a DP table?	A table that stores previously calculated results.
+# What is the base condition?	Zero objects or zero capacity gives value 0.
+# Can we take half an object?	No.
+# What is the time complexity?	O(n × W).
+# What is the space complexity?	O(n × W).
+# What is the difference between fractional and 0/1 Knapsack?	Fractional allows taking parts; 0/1 does not.
+
+# 8. Most important points to remember for your practical
+# 1. Knapsack is an optimization problem.
+# 2. It uses Dynamic Programming.
+# 3. We create a 2D DP table.
+# 4. Every object has two choices: include or exclude.
+# 5. We use max() to select the better choice.
+# 6. Finally, we backtrack to find selected objects.

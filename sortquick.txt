@@ -1,0 +1,231 @@
+import random
+
+def partition(arr, low, high, count):
+    pivot = arr[high]
+    i = low-1
+    for j in range(low, high):
+        count[0]+=1
+        if arr[j] <= pivot:
+            i+=1
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i+1], arr[high] = arr[high], arr[i+1]
+    return i+1
+
+def random_partition(arr, low, high, count):
+    pivot = random.randint(low, high)
+    arr[pivot], arr[high] = arr[high], arr[pivot]
+    return partition(arr, low, high, count)
+
+def deterministic(arr, low, high, count):
+    if low<high: 
+        pi = partition(arr, low, high, count)
+        deterministic(arr, low, pi-1, count)
+        deterministic(arr, pi+1, high, count)
+
+def randomized(arr, low, high, count):
+    if low<high:
+        pi = random_partition(arr, low, high, count)
+        randomized(arr, low, pi-1, count)
+        randomized(arr, pi+1, high, count)
+
+arr = list(map(int, input("Enter array elements : ").split()))
+arr1 = arr.copy()
+arr2 = arr.copy()
+count1 = [0]
+count2 = [0]
+
+deterministic(arr1, 0, len(arr1)-1, count1)
+randomized(arr2, 0, len(arr2)-1, count2)
+
+print(arr1, count1)
+print(arr2, count2)
+
+
+# 1. What is Quick Sort?
+# Quick Sort is a sorting algorithm that arranges elements in ascending or descending order.
+
+# It uses the Divide and Conquer technique.
+
+# Basic logic:
+# 1. Select one element as a pivot.
+# 2. Place smaller elements on the left side of the pivot.
+# 3. Place greater elements on the right side.
+# 4. Repeat the same process for the left and right parts.
+# 5. Finally, the array becomes sorted.
+# There are two types in your program:
+# - Deterministic Quick Sort
+# - Randomized Quick Sort
+# 2. Logic with example
+# Suppose the input array is:
+# [8, 4, 7, 3, 10, 2]
+
+
+# A. Deterministic Quick Sort
+# In your program, the last element is always selected as the pivot.
+# pivot = arr[high]
+
+
+
+# Here, pivot = 2.
+
+# Now arrange the elements:
+# [2, 4, 7, 3, 10, 8]
+
+
+# The pivot 2 is placed in its correct position.
+
+# Next, Quick Sort is applied recursively to the left and right subarrays.
+
+# The process continues until the entire array is sorted.
+# B. Randomized Quick Sort
+# Here, the pivot is selected randomly.
+# pivot = random.randint(low, high)
+
+
+
+# For example, suppose the randomly selected pivot is 7.
+
+# The program moves that pivot to the last position and performs partitioning.
+
+# The process repeats until the array is sorted.
+
+# Main difference:
+# Deterministic Quick Sort	Randomized Quick Sort
+# Pivot is fixed (last element in your code).	Pivot is selected randomly.
+# Uses partition().	Uses random_partition().
+# Performance can be poor for certain input arrangements.	Random pivot reduces the chance of consistently poor partitions.
+
+# 3. What input should you enter?
+# Run your Python program:
+# Sample input
+# Enter array elements : 8 4 7 3 10 2
+
+
+#  Copy input
+# 4. Expected output
+# [2, 3, 4, 7, 8, 10] [11]
+# [2, 3, 4, 7, 8, 10] [9]
+
+
+# Both arrays are sorted
+# Important: Your comparison counts may be different depending on the random pivot selected.
+
+# The deterministic count for this particular input is 11.
+# 5. Explanation of your code
+# Part 1: Import library
+# import random
+
+
+
+# Used to select a random pivot in Randomized Quick Sort.
+# Part 2: Partition function
+# def partition(arr, low, high, count):    pivot = arr[high]    i = low-1
+
+
+
+# - arr = Array.
+# - low = Starting index.
+# - high = Ending index.
+# - pivot = Last element.
+# - i = Tracks the position of smaller elements.
+# for j in range(low, high):    count[0] += 1
+
+
+
+# Checks every element before the pivot and increases the comparison counter.
+# if arr[j] <= pivot:    i += 1    arr[i], arr[j] = arr[j], arr[i]
+
+
+
+# If an element is smaller than or equal to the pivot, it is moved to the left side.
+# arr[i+1], arr[high] = arr[high], arr[i+1]return i+1
+
+
+
+# Places the pivot in its correct position and returns its index.
+# Part 3: Random partition
+# def random_partition(arr, low, high, count):    pivot = random.randint(low, high)    arr[pivot], arr[high] = arr[high], arr[pivot]    return partition(arr, low, high, count)
+
+
+
+# - Selects a random index.
+# - Swaps the randomly selected element with the last element.
+# - Calls the normal partition function.
+# Part 4: Deterministic Quick Sort
+# def deterministic(arr, low, high, count):    if low < high:        pi = partition(arr, low, high, count)        deterministic(arr, low, pi-1, count)        deterministic(arr, pi+1, high, count)
+
+
+
+# - Checks whether the array has more than one element.
+# - Partitions the array.
+# - Sorts the left subarray.
+# - Sorts the right subarray.
+# Part 5: Randomized Quick Sort
+# def randomized(arr, low, high, count):    if low < high:        pi = random_partition(arr, low, high, count)        randomized(arr, low, pi-1, count)        randomized(arr, pi+1, high, count)
+
+
+
+# Works similarly to deterministic Quick Sort, but selects a random pivot.
+# Part 6: Main program
+# arr = list(map(int, input("Enter array elements : ").split()))
+
+
+
+# Takes array elements from the user.
+
+# Example: 8 4 7 3 10 2
+# arr1 = arr.copy()arr2 = arr.copy()
+
+
+
+# Creates two copies because both sorting algorithms should work on the same original array.
+# count1 = [0]count2 = [0]
+
+
+
+# Initializes comparison counters.
+
+# Why [0] instead of 0?
+
+# Because lists are mutable, so the recursive functions can update the counter.
+# deterministic(arr1, 0, len(arr1)-1, count1)randomized(arr2, 0, len(arr2)-1, count2)
+
+
+
+# Calls both sorting algorithms.
+# print(arr1, count1)print(arr2, count2)
+
+
+
+# Displays sorted arrays and their comparison counts.
+# 6. Important viva questions
+# Question	Answer
+# What is Quick Sort?	A sorting algorithm based on Divide and Conquer.
+# Which technique does Quick Sort use?	Divide and Conquer.
+# What is a pivot?	An element used to divide the array.
+# What is partitioning?	Separating smaller and greater elements around the pivot.
+# What is deterministic Quick Sort?	Quick Sort with a fixed pivot-selection rule.
+# What is randomized Quick Sort?	Quick Sort with a randomly selected pivot.
+# Why use random pivot?	To reduce the chance of consistently unbalanced partitions.
+# What is recursion?	A function calling itself.
+# What is the best-case time complexity?	O(n log n).
+# What is the average-case time complexity?	O(n log n).
+# What is the worst-case time complexity?	O(n²).
+# Is Quick Sort stable?	No, generally it is not stable.
+# What is the base condition?	low < high.
+
+# 7. Time complexity (very important)
+# Case	Deterministic	Randomized (expected)
+# Best	O(n log n)	O(n log n)
+# Average	O(n log n)	O(n log n)
+# Worst	O(n²)	O(n²)
+
+# Randomized Quick Sort does not guarantee O(n log n) every time. It has expected O(n log n) performance.
+# 8. Important points to remember for practical
+# 1. Quick Sort uses Divide and Conquer.
+# 2. Pivot divides the array into two parts.
+# 3. Deterministic version selects the last element as pivot.
+# 4. Randomized version selects a random pivot.
+# 5. partition() places the pivot in its correct position.
+# 6. count[0] counts element comparisons.
+# 7. Both algorithms sort the array in ascending order

@@ -1,0 +1,170 @@
+def placeQueen(board, row, n):
+    if row == n:
+        return True
+    for col in range(n):
+        if is_safe(board, row, col, n):
+            board[row][col] = 1
+            if placeQueen(board, row+1, n):
+                return True
+            board[row][col] = 0
+    return False
+
+def is_safe(board, row, col, n):
+
+    # upper column
+    for i in range(row):
+        if board[i][col] == 1:
+            return False
+
+    # upper-left diagonal
+    i, j = row-1, col-1
+    while i>=0 and j>=0:
+        if board[i][j] == 1:
+            return False
+        i-=1
+        j-=1
+
+    # upper-right diagonal
+    i, j = row-1, col+1
+    while i>=0 and j<n:
+        if board[i][j] == 1:
+            return False
+        i-=1
+        j+=1
+    return True
+
+n = int(input("Enter no. of Queens : "))
+print("Let's place onto ", n, "x", n, " board - ")
+board = [[0 for _ in range(n)] for _ in range(n)]
+placeQueen(board, 0, n)
+for row in board:
+    print(row)
+
+
+# Checks whether all queens have been placed.
+
+# If row == n, it means we successfully placed N queens.
+# for col in range(n):    if is_safe(board, row, col, n):
+
+
+
+# Checks every column in the current row.
+
+# is_safe() checks whether placing a queen at that position is safe.
+# board[row][col] = 1
+
+
+
+# Places a queen at that position.
+# if placeQueen(board, row+1, n):    return True
+
+
+
+# Calls the same function recursively to place a queen in the next row.
+# board[row][col] = 0
+
+
+
+# If the next placement fails, remove the queen and try another position.
+
+# This is the most important line for understanding Backtracking.
+# Part 2: is_safe() function
+# This function checks whether a queen can be safely placed.
+
+# There are three checks.
+
+# 1. Upper column
+# for i in range(row):    if board[i][col] == 1:        return False
+
+
+
+# Checks whether another queen is already present in the same column above.
+
+# 2. Upper-left diagonal
+# i, j = row-1, col-1while i>=0 and j>=0:    if board[i][j] == 1:        return False    i-=1    j-=1
+
+
+
+# Checks the upper-left diagonal for another queen.
+
+# 3. Upper-right diagonal
+# i, j = row-1, col+1while i>=0 and j<n:    if board[i][j] == 1:        return False    i-=1    j+=1
+
+
+
+# Checks the upper-right diagonal for another queen.
+# return True
+
+
+
+# If no queen is found in these positions, the position is safe.
+
+# Why don't we check the lower rows?
+
+# Because our program places queens row by row, from top to bottom. Lower rows don't contain queens yet.
+# Part 3: Main program
+# n = int(input("Enter no. of Queens : "))
+
+
+
+# Takes the number of queens from the user.
+# board = [[0 for _ in range(n)] for _ in range(n)]
+
+
+
+# Creates an N × N board filled with zeros.
+# placeQueen(board, 0, n)
+
+
+
+# Starts placing queens from row 0.
+# for row in board:    print(row)
+
+
+
+# Prints the final chessboard.
+# 6. Important viva questions
+# Question	Answer
+# What is N-Queens problem?	Placing N queens on an N × N board without attacking each other.
+# Which algorithm is used?	Backtracking.
+# What is Backtracking?	Trying a solution and going back if it fails.
+# What does 0 represent?	Empty position.
+# What does 1 represent?	Queen placed.
+# What is recursion?	A function calling itself.
+# What is the base condition?	row == n.
+# Why do we use is_safe()?	To check whether a position is safe.
+# Why do we check diagonals?	Queens can attack diagonally.
+# Why do we reset board[row][col] = 0?	To undo an incorrect placement.
+# What is the time complexity?	Commonly expressed as O(N!), as each row tries available columns with backtracking.
+# What is the space complexity?	O(N²) for the board, plus O(N) recursion depth.
+
+# 7. Important inputs to try in your practical
+# Input N	Expected result
+# 1	One queen can be placed.
+# 2	No solution exists.
+# 3	No solution exists.
+# 4	Solution exists.
+# 5	Solution exists.
+
+# One small correction in your program:
+
+# Currently, you are not checking whether a solution exists.
+
+# Instead of:
+# placeQueen(board, 0, n)
+
+
+
+# Use:
+# if placeQueen(board, 0, n):    print("Solution exists:")    for row in board:        print(row)else:    print("No solution exists")
+
+
+
+# Otherwise, for N = 2 or N = 3, your program will simply print an empty board.
+
+# 8. Remember these 5 points for viva
+# 1. N-Queens uses the Backtracking algorithm.
+# 2. We place queens row by row.
+# 3. is_safe() checks columns and diagonals.
+# 4. If placement fails, we remove the queen and try another position.
+# 5. row == n is the base condition indicating success.
