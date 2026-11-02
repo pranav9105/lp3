@@ -1,0 +1,20 @@
+LP3 Practical Assignment Video links
+Assignment No 1:
+Installation of MetaMask and study spending Ether per transaction.
+https://www.youtube.com/watch?v=96v7Sm8iYLU&list=PLpfCBjDIBlkJRBtCJy_ndhuRMvJ1fJGCl&index=2
+
+Assignment No 2:
+Create your own wallet using Metamask for crypto transactions.
+https://www.youtube.com/watch?v=8BqSiRLShXQ&list=PLpfCBjDIBlkJRBtCJy_ndhuRMvJ1fJGCl&index=4
+
+Assignment No 3:
+Write a smart contract on a test network, for Bank account of a customer for following operations:
+Deposit money
+Withdraw Money
+Show balance
+https://www.youtube.com/watch?v=bx-PSp405z0&list=PLpfCBjDIBlkJRBtCJy_ndhuRMvJ1fJGCl&index=3
+
+Assignment No 4:
+Write a program in solidity to create Student data. Use the following constructs: Structures Arrays Fallback Deploy this as smart contract on Ethereum and Observe the transaction fee and Gas values.
+
+https://www.youtube.com/watch?v=mGs4QqrOucw&list=PLpfCBjDIBlkJRBtCJy_ndhuRMvJ1fJGCl&index=1

@@ -1,0 +1,195 @@
+
+# Experiment: K-Nearest Neighbors (KNN) on Diabetes Dataset
+
+# 1. Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+
+
+# 2. Upload Dataset (Google Colab only)
+from google.colab import files
+uploaded = files.upload()
+
+
+# 3. Load Dataset
+df = pd.read_csv("/content/diabetes.csv")
+df.head()
+
+
+# 4. Display Basic Information
+print(df.info())
+print(df.describe())
+
+
+# 5. Check Missing Values
+print(df.isnull().sum())
+
+
+# 6. Separate Features (X) and Target (y)
+X = df.drop('Outcome', axis=1)
+y = df['Outcome']
+
+
+# 7. Split Dataset (80% Training, 20% Testing)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+
+# 8. Feature Scaling
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+
+# 9. Visualize Diabetes Distribution
+sns.countplot(x='Outcome', data=df)
+plt.title("Distribution of Diabetic vs Non-Diabetic")
+plt.xlabel("Outcome (0 = Non-Diabetic, 1 = Diabetic)")
+plt.ylabel("Count")
+plt.show()
+
+
+# 10. Choose Number of Neighbors
+k = 5
+
+
+# 11. Initialize KNN Model
+knn = KNeighborsClassifier(n_neighbors=k)
+
+
+# 12. Train Model
+knn.fit(X_train, y_train)
+
+
+# 13. Make Predictions
+y_pred = knn.predict(X_test)
+
+
+# 14. Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
+
+
+# 15. Calculate Performance Metrics
+accuracy = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+
+print("Accuracy:", round(accuracy, 4))
+print("Error Rate:", round(error_rate, 4))
+print("Precision:", round(precision, 4))
+print("Recall:", round(recall, 4))
+print("F1-Score:", round(f1, 4))
+
+
+# 16. Find Best K Value using Error Rate
+error = []
+
+for i in range(1, 21):
+    knn = KNeighborsClassifier(n_neighbors=i)
+    knn.fit(X_train, y_train)
+
+    pred_i = knn.predict(X_test)
+    error.append(np.mean(pred_i != y_test))
+
+
+# 17. Plot Error Rate vs K Value
+plt.figure(figsize=(10, 5))
+plt.plot(range(1, 21), error, marker='o', color='blue')
+plt.title('Error Rate vs K Value')
+plt.xlabel('K Value')
+plt.ylabel('Mean Error')
+plt.show()
+
+
+KNN Diabetes – Important Points for Practical Viva
+1. What is KNN?
+K-Nearest Neighbors (KNN) is a supervised machine learning algorithm used for classification and regression. It predicts output based on the nearest data points.
+2. Important code explanations
+Code	Meaning
+pd.read_csv()	Loads the CSV dataset.
+df.head()	Displays first 5 rows.
+df.info()	Displays dataset information.
+df.describe()	Displays statistical information.
+df.isnull().sum()	Checks missing values.
+X = df.drop('Outcome', axis=1)	Stores input features.
+y = df['Outcome']	Stores target/output.
+train_test_split()	Splits data into training and testing sets.
+StandardScaler()	Scales features to a similar range.
+KNeighborsClassifier(n_neighbors=5)	Creates KNN model with K = 5.
+knn.fit()	Trains the model.
+knn.predict()	Predicts the output.
+confusion_matrix()	Shows correct and incorrect predictions.
+
+3. Important dataset points
+- Dataset: diabetes.csv
+- Total records: 768
+- Total columns: 9
+- Input features: 8
+- Target column: Outcome
+- Outcome = 0: Non-diabetic
+- Outcome = 1: Diabetic
+- Training data: 80%
+- Testing data: 20%
+4. Performance metrics
+Metric	Meaning
+Accuracy	Percentage of correct predictions.
+Error Rate	Percentage of incorrect predictions.
+Precision	Correct diabetic predictions out of all predicted diabetic cases.
+Recall	Correctly identified diabetic cases out of all actual diabetic cases.
+F1-Score	Balance between precision and recall.
+
+5. Important viva questions
+Q1. Why do we use KNN?
+
+To classify whether a person is diabetic or non-diabetic.
+
+Q2. What is the value of K in this program?
+
+K = 5.
+
+Q3. Why do we use StandardScaler?
+
+Because KNN uses distance calculations, and scaling prevents features with larger values from dominating.
+
+Q4. What is a confusion matrix?
+
+It is a table showing correct and incorrect predictions.
+
+Q5. What is random_state=42?
+
+It ensures reproducible random splitting of the dataset.
+
+Q6. Why do we use the error-rate graph?
+
+To compare different K values and identify a K value with a lower error rate.
+
+Q7. Is KNN supervised or unsupervised?
+
+Supervised learning.
+
+Q8. What is the difference between fit() and predict()?
+- fit() trains the model.
+- predict() predicts the result.
+Most important to remember
+For your practical, remember these 5 things:
+1. KNN uses nearest neighbors to classify data.
+2. K = 5 means 5 nearest neighbors.
+3. StandardScaler is used for feature scaling.
+4. Outcome 0 means non-diabetic and 1 means diabetic.
+5. Accuracy, precision, recall, error rate and confusion matrix evaluate model performance.

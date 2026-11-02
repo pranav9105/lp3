@@ -1,0 +1,409 @@
+P3_ML_Practical_2
+Classify the email using the binary classification method. Email Spam detection has two states:
+a) Normal State – Not Spam, b) Abnormal State – Spam. Use K-Nearest Neighbors and Support
+Vector Machine for classification. Analyze their performance. Dataset link: The emails.csv dataset
+on the Kaggle https://www.kaggle.com/datasets/balaka18/email-spam-classification-dataset-csv
+[4]: # Imports
+
+# LP3 ML PRACTICAL 2
+# Email Spam Detection using KNN and SVM
+
+# 1. Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    roc_curve,
+    auc,
+    precision_recall_curve
+)
+
+
+# 2. Load Dataset
+df = pd.read_csv('emails.csv')
+
+
+# 3. Display First Five Rows
+print("Dataset:")
+print(df.head())
+
+
+# 4. Split Features and Target
+X = df.drop(columns=['Email No.', 'Prediction'])
+y = df['Prediction']
+
+
+# 5. Train-Test Split (80% Training, 20% Testing)
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+
+# 6. Initialize Models
+knn = KNeighborsClassifier(n_neighbors=5)
+
+svm = SVC(kernel='linear', random_state=42)
+
+
+# 7. Train Models
+knn.fit(X_train, y_train)
+svm.fit(X_train, y_train)
+
+
+# 8. Make Predictions
+y_pred_knn = knn.predict(X_test)
+y_pred_svm = svm.predict(X_test)
+
+
+# 9. Evaluate Model Performance
+def evaluate_model(y_true, y_pred, model_name):
+
+    accuracy = accuracy_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+    f1 = f1_score(y_true, y_pred)
+
+    print(f"\n--- {model_name} ---")
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1-Score: {f1:.4f}")
+
+    return accuracy, precision, recall, f1
+
+
+# 10. Evaluate Both Models
+knn_metrics = evaluate_model(
+    y_test, y_pred_knn, "K-Nearest Neighbors"
+)
+
+svm_metrics = evaluate_model(
+    y_test, y_pred_svm, "Support Vector Machine"
+)
+//this may give warning but will run
+
+# 11. Confusion Matrix
+def plot_confusion_matrix(y_true, y_pred, model_name):
+
+    cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
+
+    plt.figure(figsize=(6, 4))
+
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt='d',
+        cmap='Blues',
+        xticklabels=['Not Spam', 'Spam'],
+        yticklabels=['Not Spam', 'Spam']
+    )
+
+    plt.title(f"{model_name} Confusion Matrix")
+    plt.ylabel('True Label')
+    plt.xlabel('Predicted Label')
+    plt.show()
+
+
+# 12. Plot Confusion Matrices
+plot_confusion_matrix(
+    y_test, y_pred_knn, "K-Nearest Neighbors"
+)
+
+plot_confusion_matrix(
+    y_test, y_pred_svm, "Support Vector Machine"
+)
+
+
+# 13. ROC Curve and Precision-Recall Curve
+def plot_roc_pr_curve(y_true, y_scores_knn, y_scores_svm):
+
+    # ROC Curve
+    fpr_knn, tpr_knn, _ = roc_curve(y_true, y_scores_knn)
+    fpr_svm, tpr_svm, _ = roc_curve(y_true, y_scores_svm)
+
+    auc_knn = auc(fpr_knn, tpr_knn)
+    auc_svm = auc(fpr_svm, tpr_svm)
+
+    plt.figure(figsize=(14, 6))
+
+    plt.subplot(1, 2, 1)
+
+    plt.plot(
+        fpr_knn,
+        tpr_knn,
+        label=f'KNN (AUC = {auc_knn:.2f})'
+    )
+
+    plt.plot(
+        fpr_svm,
+        tpr_svm,
+        label=f'SVM (AUC = {auc_svm:.2f})'
+    )
+
+    plt.plot([0, 1], [0, 1], 'k--')
+
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve')
+    plt.legend()
+
+
+    # Precision-Recall Curve
+    precision_knn, recall_knn, _ = precision_recall_curve(
+        y_true, y_scores_knn
+    )
+
+    precision_svm, recall_svm, _ = precision_recall_curve(
+        y_true, y_scores_svm
+    )
+
+    plt.subplot(1, 2, 2)
+
+    plt.plot(
+        recall_knn,
+        precision_knn,
+        label='KNN'
+    )
+
+    plt.plot(
+        recall_svm,
+        precision_svm,
+        label='SVM'
+    )
+
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+# 14. Get Prediction Scores
+y_scores_knn = knn.predict_proba(X_test)[:, 1]
+
+y_scores_svm = svm.decision_function(X_test)
+
+
+# 15. Plot ROC and PR Curves
+plot_roc_pr_curve(
+    y_test,
+    y_scores_knn,
+    y_scores_svm
+)
+
+
+# 16. Compare Model Performance
+metrics_df = pd.DataFrame(
+    [knn_metrics, svm_metrics],
+    columns=['Accuracy', 'Precision', 'Recall', 'F1-Score'],
+    index=['KNN', 'SVM']
+)
+
+metrics_df.plot(
+    kind='bar',
+    figsize=(10, 6)
+)
+
+plt.title("Comparison of KNN and SVM Performance Metrics")
+plt.ylabel('Scores')
+plt.xticks(rotation=0)
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+
+# 17. Final Comparison
+print("\nFinal Model Comparison:")
+print(metrics_df)
+
+print("\nBetter Model based on Accuracy:")
+
+if svm_metrics[0] > knn_metrics[0]:
+    print("Support Vector Machine (SVM)")
+else:
+    print("K-Nearest Neighbors (KNN)")
+
+
+
+Important Machine Learning Concepts for Your Viva
+These are concepts you should understand even if the examiner asks questions outside the exact code.
+1. What is Machine Learning?
+Machine Learning is a branch of Artificial Intelligence where computers learn patterns from data and make predictions without being explicitly programmed for every situation.
+
+Example: Teaching a computer to identify spam emails using previously labelled emails.
+2. What are the types of Machine Learning?
+Type	Meaning	Example
+Supervised Learning	Learns from labelled data	Spam detection
+Unsupervised Learning	Finds patterns in unlabelled data	Customer grouping
+Reinforcement Learning	Learns through rewards and penalties	Game-playing AI
+
+Our practical uses Supervised Learning, because our dataset already contains the correct answers in the Prediction column.
+3. Classification vs Regression
+Classification	Regression
+Predicts categories	Predicts numerical values
+Spam / Not Spam	Uber fare amount
+KNN Classifier	Linear Regression
+SVM Classifier	Random Forest Regressor
+
+4. What is Binary Classification?
+When a model predicts between exactly two classes, it is called Binary Classification.
+
+Our classes are 0 (Not Spam) and 1 (Spam).
+5. What is Overfitting?
+Overfitting happens when a model learns the training data too closely, including noise and unnecessary details.
+
+It performs very well on training data but poorly on new, unseen data.
+6. What is Underfitting?
+Underfitting happens when a model fails to learn the important patterns in the training data.
+
+It performs poorly on both training and testing data.
+7. What is Feature Extraction?
+Feature extraction means identifying or creating useful information from raw data that a model can use.
+
+In our dataset, word frequencies are already provided as numerical features. We use these columns directly.
+8. What is the difference between KNN and SVM?
+KNN	SVM
+Instance-based algorithm	Boundary-based algorithm
+Uses nearest neighbors	Finds a separating boundary
+Uses distance calculations	Uses support vectors and margins
+n_neighbors=5 in our code	kernel='linear' in our code
+
+9. What is a Support Vector?
+Support vectors are the data points closest to the SVM's decision boundary. They help determine the position of that boundary.
+10. What is a Hyperplane?
+A hyperplane is the decision boundary used by SVM to separate different classes.
+11. What is a Confusion Matrix?
+It is a table used to compare actual and predicted classes and identify correct and incorrect predictions.
+12. What is the difference between Precision and Recall?
+- Precision: Out of the emails predicted as Spam, how many were actually Spam?
+- Recall: Out of all actual Spam emails, how many did the model detect?
+13. What is F1-score?
+It is the harmonic mean of Precision and Recall.
+14. What is ROC?
+ROC is a graph that plots True Positive Rate against False Positive Rate at different classification thresholds.
+15. What is AUC?
+AUC means Area Under the Curve. It measures how well a model distinguishes between classes.
+
+20. Important Viva Questions and Answers
+These are the questions I recommend preparing first.
+Viva practice – 22 questions
+2/22 reviewed
+
+1.What is the aim of this practical?To detect whether an email is Spam or Not Spam using KNN and SVM classification algorithms and compare their performance.
+opic	Answer
+Practical	Email Spam Detection
+Dataset	emails.csv
+Learning type	Supervised Learning
+Problem type	Binary Classification
+Input	Word frequencies
+Target	Prediction
+Class 0	Not Spam
+Class 1	Spam
+Algorithms	KNN and SVM
+KNN value	5 neighbors
+SVM kernel	Linear
+Training/testing	80% / 20%
+Evaluation	Accuracy, Precision, Recall, F1
+Graphs	Confusion Matrix, ROC, PR, Bar Chart
+Best model	Based on evaluation results
+
+
+Four formulas to remember
+\[
+Accuracy=\frac{TP+TN}{TP+TN+FP+FN}
+\]
+
+\[
+Precision=\frac{TP}{TP+FP}
+\]
+
+\[
+Recall=\frac{TP}{TP+FN}
+\]
+
+\[
+F1=2\frac{Precision\times Recall}{Precision+Recall}
+\]
+
+ROC Curve and PR Curve are graphs used to check how well a Machine Learning classification model performs.
+1. ROC Curve (Receiver Operating Characteristic)
+
+
+
+
+
+
+
+datacamp.com
+
+
+ROC Curve shows the relationship between:
+- TPR (True Positive Rate): How many actual spam emails are correctly detected.
+- FPR (False Positive Rate): How many normal emails are incorrectly identified as spam.
+Important points:
+- X-axis = False Positive Rate.
+- Y-axis = True Positive Rate.
+- A curve closer to the top-left corner indicates better performance.
+- AUC means Area Under the Curve. Higher AUC generally means better classification.
+2. PR Curve (Precision-Recall Curve)
+
+
+
+
+
+
+
+medium.com
+
+
+PR Curve shows the relationship between:
+- Precision: Out of all emails predicted as spam, how many are actually spam?
+- Recall: Out of all actual spam emails, how many are correctly detected?
+Important points:
+- X-axis = Recall.
+- Y-axis = Precision.
+- A curve closer to the top-right generally indicates better performance.
+3. Difference between ROC and PR Curve
+ROC Curve	PR Curve
+Uses TPR and FPR	Uses Precision and Recall
+Shows overall classification performance	Focuses on positive class (Spam)
+X-axis: FPR	X-axis: Recall
+Y-axis: TPR	Y-axis: Precision
+
+4. Viva Questions
+Q1. What is ROC?
+
+ROC stands for Receiver Operating Characteristic. It is a graph of True Positive Rate against False Positive Rate.
+
+Q2. What is PR Curve?
+
+PR stands for Precision-Recall. It is a graph showing the relationship between precision and recall.
+
+Q3. What is AUC?
+
+AUC stands for Area Under the Curve. It measures how well a model can distinguish between classes.
+
+Q4. Why do we use ROC and PR curves?
+
+To visually evaluate and compare the performance of classification models such as KNN and SVM.
+
+Easy trick to remember:
+- ROC = TPR vs FPR.
+- PR = Precision vs Recall.

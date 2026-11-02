@@ -1,0 +1,2 @@
+python -m notebook
+df = pd.read_csv('uber/uber.csv') here uber is folder and it have 2 files one dataset and one .ipynb file

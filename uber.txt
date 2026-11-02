@@ -1,0 +1,355 @@
+Predict the price of the Uber ride from a given pickup point to the agreed drop-off location. Perform following tasks: 1. Pre-process the dataset. 2. Identify outliers. 3. Check
+the correlation. 4. Implement linear regression and random forest regression models. 5.
+Evaluate the models and compare their respective scores like R2, RMSE, etc. Dataset link:
+https://www.kaggle.com/datasets/yasserh/uber-fares-dataset
+[1]: # Imports
+
+
+# LP3 ML PRACTICAL
+# Uber Fare Prediction using Linear Regression and Random Forest
+
+# 1. Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+# 2. Load Dataset
+df = pd.read_csv('uber.csv')
+
+print("Dataset head:")
+print(df.head())
+
+
+# 3. Preprocess Data
+
+# Check missing values
+print("\nMissing values per column:")
+print(df.isnull().sum())
+
+
+# Drop rows with missing values
+df = df.dropna().copy()
+
+
+# Convert pickup_datetime into datetime format
+df['pickup_datetime'] = pd.to_datetime(
+    df['pickup_datetime'],
+    utc=True
+)
+
+# Extract hour and day of week
+df['hour'] = df['pickup_datetime'].dt.hour
+df['dayofweek'] = df['pickup_datetime'].dt.dayofweek
+
+
+# 4. Calculate Haversine Distance
+def haversine(lat1, lon1, lat2, lon2):
+
+    # Convert degrees into radians
+    lat1, lon1, lat2, lon2 = map(
+        np.radians,
+        [lat1, lon1, lat2, lon2]
+    )
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = (
+        np.sin(dlat / 2)**2
+        + np.cos(lat1) * np.cos(lat2)
+        * np.sin(dlon / 2)**2
+    )
+
+    c = 2 * np.arcsin(np.sqrt(a))
+
+    r = 6371
+
+    return c * r
+
+
+df['distance_km'] = haversine(
+    df['pickup_latitude'],
+    df['pickup_longitude'],
+    df['dropoff_latitude'],
+    df['dropoff_longitude']
+)
+
+
+# 5. Remove Invalid Data
+df = df[
+    (df['distance_km'] > 0.01) &
+    (df['fare_amount'] > 0)
+]
+
+print("\nData shape after cleaning:")
+print(df.shape)
+
+
+# 6. Outlier Detection using Boxplots
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+sns.boxplot(x=df['fare_amount'])
+plt.title("Fare Amount Distribution")
+
+plt.subplot(1, 2, 2)
+sns.boxplot(x=df['distance_km'])
+plt.title("Distance Distribution (km)")
+
+plt.tight_layout()
+plt.show()
+
+
+# Remove Outliers using 99th Percentile
+fare_99 = df['fare_amount'].quantile(0.99)
+dist_99 = df['distance_km'].quantile(0.99)
+
+df = df[
+    (df['fare_amount'] <= fare_99) &
+    (df['distance_km'] <= dist_99)
+]
+
+print("\nData shape after removing outliers:")
+print(df.shape)
+
+
+# 7. Correlation Heatmap
+plt.figure(figsize=(8, 6))
+
+sns.heatmap(
+    df[['fare_amount', 'distance_km', 'hour', 'dayofweek']].corr(),
+    annot=True,
+    cmap='coolwarm'
+)
+
+plt.title("Feature Correlation")
+plt.show()
+
+
+# 8. Model Preparation
+features = ['distance_km', 'hour', 'dayofweek']
+
+X = df[features]
+y = df['fare_amount']
+
+
+# 9. Train-Test Split (80% Training, 20% Testing)
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+
+
+# 10. Linear Regression Model
+lr = LinearRegression()
+
+lr.fit(X_train, y_train)
+
+y_pred_lr = lr.predict(X_test)
+
+
+# 11. Random Forest Regression Model
+rf = RandomForestRegressor(
+    n_estimators=100,
+    random_state=42
+)
+
+rf.fit(X_train, y_train)
+
+y_pred_rf = rf.predict(X_test)
+
+
+# 12. Evaluation Function
+def evaluate(y_true, y_pred, model_name):
+
+    rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+
+    r2 = r2_score(y_true, y_pred)
+
+    print(f"\n{model_name}")
+    print(f"RMSE: {rmse:.2f}")
+    print(f"R2 Score: {r2:.4f}")
+
+    return rmse, r2
+
+
+# 13. Evaluate Both Models
+lr_metrics = evaluate(
+    y_test,
+    y_pred_lr,
+    "Linear Regression"
+)
+
+rf_metrics = evaluate(
+    y_test,
+    y_pred_rf,
+    "Random Forest"
+)
+
+
+# 14. Visualize Actual vs Predicted Fare
+plt.figure(figsize=(8, 6))
+
+plt.scatter(
+    y_test,
+    y_pred_rf,
+    alpha=0.3
+)
+
+plt.xlabel("Actual Fare")
+plt.ylabel("Predicted Fare")
+
+plt.title(
+    "Random Forest Regression: Actual vs Predicted Fare"
+)
+
+plt.plot(
+    [0, y_test.max()],
+    [0, y_test.max()],
+    'r--'
+)
+
+plt.show()
+
+
+# 15. Compare Model Performance
+comparison_df = pd.DataFrame(
+    [lr_metrics, rf_metrics],
+    columns=['RMSE', 'R2 Score'],
+    index=['Linear Regression', 'Random Forest']
+)
+
+print("\nModel Comparison:")
+print(comparison_df)
+
+
+# 16. Model Comparison Bar Chart
+comparison_df.plot(
+    kind='bar',
+    figsize=(10, 6)
+)
+
+plt.title("Linear Regression vs Random Forest")
+plt.ylabel("Score")
+plt.xticks(rotation=0)
+plt.tight_layout()
+plt.show()
+
+
+# 17. Final Best Model
+print("\nBest Model based on RMSE:")
+
+if lr_metrics[0] < rf_metrics[0]:
+    print("Linear Regression")
+else:
+    print("Random Forest")
+
+
+These are the questions I recommend preparing first. Learn the answers in simple language rather than memorizing complicated definitions.
+A. Data Science basics
+Question	Answer
+What is Data Science?	Extracting useful information from data.
+What is Machine Learning?	Teaching computers to learn patterns from data.
+What is a dataset?	A collection of data in rows and columns.
+What is preprocessing?	Cleaning and preparing data before training.
+What is a feature?	An input variable used for prediction.
+What is a target variable?	The output we want to predict.
+What is a DataFrame?	A tabular data structure in Pandas.
+What is NumPy?	A library for numerical calculations.
+What is Pandas?	A library for data manipulation and analysis.
+
+B. Machine Learning basics
+Question	Answer
+What are the types of Machine Learning?	Supervised, Unsupervised and Reinforcement Learning.
+Which type did you use?	Supervised Learning.
+Why supervised learning?	Because our dataset contains input values and their corresponding actual fares.
+What is regression?	Predicting continuous numerical values.
+What is classification?	Predicting categories or classes.
+Which algorithm did you use?	Linear Regression and Random Forest Regression.
+What is training?	Teaching the model using training data.
+What is testing?	Checking the model using unseen data.
+What is overfitting?	When a model learns training data too closely and performs poorly on unseen data.
+What is underfitting?	When a model fails to learn the important patterns in the data.
+
+C. Data cleaning and visualization
+Question	Answer
+What is an outlier?	An unusually high or low value.
+What is a boxplot?	A graph used to understand data distribution and identify outliers.
+What is a heatmap?	A graph that represents values using colours.
+What is correlation?	A measure of the relationship between two variables.
+What is Haversine?	A formula for calculating geographical distance.
+What is feature engineering?	Creating useful features from existing data.
+What is a quantile?	A value that divides data into portions.
+What is the 99th percentile?	The value below which 99% of observations fall.
+
+D. Model evaluation
+Question	Answer
+What is RMSE?	Root Mean Squared Error.
+What is R²?	Coefficient of determination.
+Which RMSE is better?	Lower RMSE.
+Which R² is better?	Generally, higher R².
+Which model performed better?	Linear Regression.
+Why?	It achieved lower RMSE and higher R².
+
+
+6. Important Python functions to remember
+Your examiner may ask you to explain individual functions from the program.
+Function	Purpose
+pd.read_csv()	Read CSV file
+df.head()	First five rows
+df.tail()	Last five rows
+df.shape	Rows and columns
+df.isnull()	Check missing values
+df.dropna()	Remove missing values
+pd.to_datetime()	Convert to datetime
+.dt.hour	Extract hour
+.dt.day_of_week	Extract weekday
+np.radians()	Convert degrees into radians
+plt.figure()	Create graph figure
+sns.boxplot()	Create boxplot
+sns.heatmap()	Create heatmap
+.corr()	Calculate correlation
+train_test_split()	Split training and testing data
+.fit()	Train model
+.predict()	Predict output
+mean_squared_error()	Calculate squared prediction error
+r2_score()	Calculate R² score
+plt.scatter()	Create scatter plot
+
+7. How to explain your project in the oral exam
+If your examiner asks, "Explain your project", you can say this:
+My project explanation
+Learn this
+
+"My project is Uber Fare Prediction using Machine Learning.
+
+The main objective of this project is to predict Uber ride fares based on distance, pickup time and day of the week.
+
+First, I imported libraries like Pandas, NumPy, Matplotlib, Seaborn and Scikit-learn.
+
+Then I loaded the Uber dataset using Pandas and performed data preprocessing by checking and removing missing values.
+
+After that, I performed feature engineering by extracting the pickup hour and day of the week from the pickup datetime.
+
+I used the Haversine formula to calculate the distance between pickup and drop-off locations.
+
+Then I removed invalid records and outliers using the 99th percentile.
+
+I visualized the data using boxplots and a correlation heatmap.
+
+After that, I selected distance, hour and day of the week as input features and fare amount as the target variable.
+
+I divided the dataset into 80% training data and 20% testing data.
+
+Then I trained two models: Linear Regression and Random Forest Regression.
+
+Finally, I evaluated both models using RMSE and R² score. Linear Regression performed better in my experiment.

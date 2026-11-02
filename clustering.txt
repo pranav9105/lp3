@@ -1,0 +1,350 @@
+
+# Experiment: K-Means Clustering on Sales Dataset
+
+# 1. Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+
+
+# 2. Load Dataset
+df = pd.read_csv("/content/sales_data_sample.csv", encoding='unicode_escape')
+df.head()
+
+
+# 3. Display Basic Information
+print(df.info())
+print(df.describe())
+print(df.columns)
+
+
+# 4. Select Numerical Columns
+df_clean = df.select_dtypes(include=[np.number]).dropna()
+
+
+# 5. Select Important Features
+features = df_clean[['QUANTITYORDERED', 'PRICEEACH', 'SALES', 'ORDERNUMBER']]
+
+
+# 6. Standardize Features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(features)
+
+print("Data shape after scaling:", X_scaled.shape)
+
+
+# 7. Find Optimal Number of Clusters Using Elbow Method
+inertia = []
+K = range(1, 11)
+
+for k in K:
+    model = KMeans(n_clusters=k, random_state=42)
+    model.fit(X_scaled)
+    inertia.append(model.inertia_)
+
+
+# 8. Plot Elbow Curve
+plt.figure(figsize=(8, 5))
+plt.plot(K, inertia, marker='o', color='blue')
+plt.title("Elbow Method - Optimal K")
+plt.xlabel("Number of Clusters (K)")
+plt.ylabel("Inertia (Within-Cluster Sum of Squares)")
+plt.grid(True)
+plt.show()
+
+
+# 9. Apply K-Means Clustering (K=4)
+kmeans = KMeans(n_clusters=4, random_state=42)
+df_clean['Cluster'] = kmeans.fit_predict(X_scaled)
+
+# Add cluster labels to original dataset
+df['Cluster'] = kmeans.labels_
+
+
+# 10. Display Cluster Centers
+print("Cluster Centers:\n", kmeans.cluster_centers_)
+
+
+# 11. Visualize Clusters
+plt.figure(figsize=(10, 6))
+sns.scatterplot(
+    x='PRICEEACH',
+    y='SALES',
+    hue='Cluster',
+    data=df,
+    palette='viridis'
+)
+
+plt.title('K-Means Clustering Visualization')
+plt.xlabel('Price Each')
+plt.ylabel('Sales')
+plt.legend(title='Cluster')
+plt.show()
+
+
+# 12. Display Cluster Summary
+cluster_summary = df.groupby('Cluster')[
+    ['SALES', 'PRICEEACH', 'QUANTITYORDERED']
+].mean()
+
+print("Cluster Summary:\n", cluster_summary)
+
+
+mportant points for practical viva
+1. What is Clustering?
+Clustering is an unsupervised machine learning technique that groups similar data points together.
+2. What is K-Means?
+K-Means is an unsupervised learning algorithm that divides data into K clusters based on similarity.
+3. What is the Elbow Method?
+It is used to find the optimal number of clusters (K).
+- X-axis: Number of clusters (K).
+- Y-axis: Inertia.
+- The point where the curve bends like an elbow indicates a suitable K.
+4. Important code explanations
+Code	Meaning
+pd.read_csv()	Loads dataset.
+df.info()	Displays dataset information.
+select_dtypes()	Selects numerical columns.
+dropna()	Removes missing values.
+StandardScaler()	Standardizes numerical data.
+KMeans()	Creates K-Means clustering model.
+fit()	Trains the clustering model.
+inertia_	Measures within-cluster variation.
+fit_predict()	Creates clusters and assigns labels.
+groupby()	Groups data based on cluster.
+
+5. Important viva questions
+Q1. Is K-Means supervised or unsupervised?
+
+Unsupervised learning.
+
+Q2. What is K in K-Means?
+
+K represents the number of clusters.
+
+Q3. Why do we use StandardScaler?
+
+To bring all numerical features to a similar scale.
+
+Q4. What is inertia?
+
+It measures the sum of squared distances between data points and their cluster centers.
+
+Q5. Why do we use random_state=42?
+
+To get reproducible results.
+
+Q6. What is a centroid?
+
+The center point of a cluster.
+
+Q7. What does fit_predict() do?
+
+It fits the model and assigns each data point to a cluster.
+
+Q8. What is the purpose of a scatter plot?
+
+To visualize different clusters using two features.
+
+Remember these for practical
+1. K-Means is an unsupervised algorithm.
+2. Elbow Method determines the optimal K.
+3. StandardScaler is used for feature scaling.
+4. Inertia measures within-cluster variation.
+5. Centroid means the center of a cluster.
+6. Your code uses K = 4 as an example; choose the final K based on the actual elbow graph.
+One important difference from KNN: KNN is generally used for classification, whereas K-Means is used for clustering.
+
+Types of Clustering
+1. K-Means Clustering
+
+
+
+
+
+
+
+mbrenndoerfer.com
+
+
+- Divides data into K groups (clusters).
+- Uses centroids (center points).
+- Example: Your sales_data_sample.csv practical.
+2. Hierarchical Clustering
+
+
+
+
+
+
+
+medium.com
+
+
+- Creates clusters in a tree-like structure.
+- Uses a dendrogram to show relationships.
+- Two types:
+  - Agglomerative: Starts with individual points and merges them.
+  - Divisive: Starts with one large cluster and divides it.
+
+Basic Machine Learning concepts
+Viva question	Easy answer
+What is Machine Learning?	Making computers learn from data and make predictions or decisions.
+What are the types of Machine Learning?	Supervised, Unsupervised and Reinforcement Learning.
+What is supervised learning?	Learning using labelled data.
+What is unsupervised learning?	Learning using unlabelled data.
+What is classification?	Predicting categories, like Yes or No.
+What is regression?	Predicting numerical values, like sales amount.
+What is clustering?	Grouping similar data points together.
+What is a dataset?	A collection of data arranged in rows and columns.
+
+2. Clustering concepts
+Viva question	Easy answer
+What is clustering?	Grouping similar data points.
+What is a cluster?	A group of similar data points.
+What is centroid?	The center point of a cluster.
+What is K in K-Means?	Number of clusters.
+What is K-Means?	An unsupervised clustering algorithm.
+What is inertia?	Sum of squared distances of points from their cluster centers.
+What is the Elbow Method?	A method to find the optimal number of clusters.
+What is an outlier?	A data point that is very different from other data points.
+Can clustering work without labelled data?	Yes.
+
+3. Types of clustering algorithms
+Know these four algorithms:
+
+
+
+
+
+
+
+
+
+1. K-Means
+
+Groups data using centroids. Uses the Elbow Method.
+
+
+
+
+
+
+
+
+
+
+
+
+2. Hierarchical Clustering
+
+Creates a tree-like structure called a dendrogram.
+
+
+
+
+
+
+
+
+
+
+
+
+3. DBSCAN
+
+Groups points based on density and identifies noise.
+
+
+
+
+
+
+
+
+
+
+
+
+4. Mean Shift
+
+Finds clusters by identifying high-density regions.
+
+
+
+4. Data preprocessing concepts
+These are very important because they are used in your practical code.
+Viva question	Easy answer
+What is Pandas?	Python library used for data handling.
+What is NumPy?	Python library used for numerical calculations.
+What is Matplotlib?	Library used to create graphs.
+What is Seaborn?	Library used for statistical visualizations.
+What is data preprocessing?	Cleaning and preparing data before applying an algorithm.
+What are missing values?	Empty values in a dataset.
+What is dropna()?	Removes rows containing missing values.
+What is feature selection?	Selecting important columns for the model.
+What is StandardScaler?	Standardizes features to have mean 0 and standard deviation 1.
+What is normalization?	Scaling values to a common range.
+
+5. Important Python libraries and functions
+Function	Purpose
+pd.read_csv()	Reads CSV file.
+df.head()	Displays first 5 rows.
+df.info()	Shows dataset information.
+df.describe()	Shows statistical summary.
+df.columns	Displays column names.
+select_dtypes()	Selects columns based on data type.
+StandardScaler()	Scales features.
+KMeans()	Creates K-Means model.
+fit()	Fits the model.
+fit_predict()	Fits model and assigns cluster labels.
+groupby()	Groups records.
+scatterplot()	Creates a scatter plot.
+
+6. Questions related to your sales dataset
+Q1. What is the dataset used in your practical?
+
+Sales data sample dataset.
+
+Q2. How many records are present?
+
+2,823 records.
+
+Q3. How many columns are present?
+
+25 columns.
+
+Q4. Which features did you select?
+- QUANTITYORDERED
+- PRICEEACH
+- SALES
+- ORDERNUMBER
+Q5. Why did you select numerical columns?
+
+Because K-Means performs calculations using numerical values.
+
+Q6. Why did you use K-Means?
+
+To group similar sales records into clusters.
+
+Q7. What does Cluster 0, 1, 2 and 3 mean?
+
+They represent four different groups created by the K-Means algorithm. Their labels do not indicate ranking.
+
+Q8. Why did you use a scatter plot?
+
+To visualize clusters using price and sales.
+7. Slightly advanced questions
+Question	Answer
+What is Euclidean distance?	Straight-line distance between two points.
+What is Manhattan distance?	Distance calculated by adding absolute coordinate differences.
+What happens if K is too large?	Data gets divided into too many clusters.
+What happens if K is too small?	Different groups may get combined.
+What is overfitting?	When a model learns training data too closely and performs poorly on new data.
+What is underfitting?	When a model fails to learn important patterns.
+What is dimensionality?	Number of features or columns used for analysis.
+What is PCA?	Principal Component Analysis, used to reduce dimensions.

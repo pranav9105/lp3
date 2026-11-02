@@ -1,0 +1,463 @@
+
+# BANK CUSTOMER CHURN PREDICTION USING NEURAL NETWORK
+
+# 1. Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import roc_curve, roc_auc_score
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+
+
+# 2. Load Dataset
+df = pd.read_csv("churn.csv")
+
+print(df.head())
+print(df.info())
+
+
+# 3. Drop Unnecessary Columns
+df = df.drop(['RowNumber', 'CustomerId', 'Surname'], axis=1)
+
+
+# 4. Encode Categorical Variables
+le_gender = LabelEncoder()
+df['Gender'] = le_gender.fit_transform(df['Gender'])
+
+df = pd.get_dummies(df, columns=['Geography'], drop_first=True)
+
+
+# 5. Separate Features and Target
+X = df.drop('Exited', axis=1)
+y = df['Exited']
+
+
+# 6. Feature Scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+
+# 7. Split Dataset into Training and Testing
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.2, random_state=42
+)
+
+
+# 8. Check Target Distribution
+sns.countplot(x='Exited', data=df)
+plt.title("Customer Churn Distribution")
+plt.show()
+
+
+# 9. Build Neural Network Model
+model = Sequential([
+    Dense(16, activation='relu', input_dim=X_train.shape[1]),
+    Dropout(0.3),
+    Dense(8, activation='relu'),
+    Dense(1, activation='sigmoid')
+])
+
+
+# 10. Compile Model
+model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy',
+    metrics=['accuracy']
+)
+
+model.summary()
+
+
+# 11. Train Model
+history = model.fit(
+    X_train, y_train,
+    epochs=50,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=1
+)
+
+
+# 12. Plot Training and Validation Accuracy and Loss
+plt.figure(figsize=(12,5))
+
+plt.subplot(1,2,1)
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.legend()
+plt.title('Model Accuracy')
+
+plt.subplot(1,2,2)
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.legend()
+plt.title('Model Loss')
+
+plt.show()
+
+
+# 13. Make Predictions
+y_pred_prob = model.predict(X_test)
+y_pred = (y_pred_prob > 0.5).astype(int)
+
+
+# 14. Evaluate Model Performance
+acc = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred)
+rec = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+
+print("Accuracy:", acc)
+print("Precision:", prec)
+print("Recall:", rec)
+print("F1-Score:", f1)
+
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+
+# 15. Plot Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
+
+
+# 16. Calculate ROC Curve and AUC
+fpr, tpr, _ = roc_curve(y_test, y_pred_prob)
+roc_auc = roc_auc_score(y_test, y_pred_prob)
+
+
+# 17. Plot ROC Curve
+plt.plot(fpr, tpr, label='AUC = %.3f' % roc_auc)
+plt.plot([0,1], [0,1], linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend()
+plt.show()
+
+
+
+1. What is the aim of this practical?
+The aim is to predict whether a bank customer will leave the bank or continue using its services in the next 6 months.
+
+This is called Customer Churn Prediction.
+- Exited = 1 → Customer left the bank.
+- Exited = 0 → Customer stayed with the bank.
+Example:
+
+Suppose a bank has customer information such as age, credit score, balance, gender and salary. We train a Neural Network using this information to predict whether a customer might leave.
+2. Important concepts to understand
+Concept	Easy meaning
+Dataset	Collection of customer information
+Features (X)	Input information like age, salary, balance
+Target (y)	What we want to predict (Exited)
+Neural Network	Model that learns patterns from data
+Classification	Predicting categories (0 or 1)
+Training	Teaching the model using data
+Testing	Checking model performance
+Churn	Customer leaving the bank
+
+
+3. Explanation of code cell by cell
+Cell 1: Import libraries
+import pandas as pdimport numpy as npimport matplotlib.pyplot as pltimport seaborn as snsfrom sklearn.model_selection import train_test_splitfrom sklearn.preprocessing import LabelEncoder, StandardScalerfrom sklearn.metrics import confusion_matrix, classification_reportfrom sklearn.metrics import accuracy_score, precision_score, recall_score, f1_scorefrom tensorflow.keras.models import Sequentialfrom tensorflow.keras.layers import Dense, Dropout
+
+
+
+What are these libraries used for?
+Library	Purpose
+Pandas	Handle dataset
+NumPy	Numerical calculations
+Matplotlib	Draw graphs
+Seaborn	Statistical graphs
+Scikit-learn	Data preprocessing and evaluation
+TensorFlow/Keras	Build Neural Network
+
+Viva: What is TensorFlow?
+
+Answer: TensorFlow is an open-source library used to build and train Machine Learning and Deep Learning models.
+Cell 2: Load dataset
+df = pd.read_csv("/content/churn.csv")print(df.head())print(df.info())
+
+
+
+- read_csv() loads the CSV file.
+- head() displays the first 5 rows.
+- info() displays column names, data types and missing values.
+Your dataset contains 10,000 customer records and 14 columns.
+
+Important: /content/churn.csv is a Google Colab path. In your local Jupyter Notebook, if the CSV is in the same folder as your notebook, use:
+df = pd.read_csv("churn.csv")
+
+
+
+Cell 3: Data preprocessing
+Data preprocessing means cleaning and preparing data before giving it to the model.
+
+A. Drop unnecessary columns
+df = df.drop(['RowNumber', 'CustomerId', 'Surname'], axis=1)
+
+
+
+Removes columns that are not useful for predicting customer churn.
+- axis=1 means remove columns.
+- axis=0 means remove rows.
+B. Label Encoding
+le_gender = LabelEncoder()df['Gender'] = le_gender.fit_transform(df['Gender'])
+
+
+
+Converts text values into numbers.
+
+Example:
+- Female → 0
+- Male → 1
+C. One-Hot Encoding
+df = pd.get_dummies(df, columns=['Geography'], drop_first=True)
+
+
+
+Converts country names into numerical columns.
+
+Example:
+Geography	Geography_Germany	Geography_Spain
+France	0	0
+Germany	1	0
+Spain	0	1
+
+drop_first=True removes one category to avoid redundant columns.
+
+D. Separate input and output
+X = df.drop('Exited', axis=1)y = df['Exited']
+
+
+
+- X = Customer information (input).
+- y = Whether the customer left or stayed (output).
+E. Feature Scaling
+scaler = StandardScaler()X_scaled = scaler.fit_transform(X)
+
+
+
+Converts numerical features into a similar scale so that large values don't dominate the learning process.
+
+F. Train-test split
+X_train, X_test, y_train, y_test = train_test_split(    X_scaled, y, test_size=0.2, random_state=42)
+
+
+
+Divides the dataset into two parts:
+- 80% → Training data.
+- 20% → Testing data.
+- random_state=42 → Keeps the random split reproducible.
+For this dataset:
+- 8,000 training records.
+- 2,000 testing records.
+Cell 4: Check customer distribution
+sns.countplot(x='Exited', data=df)plt.title("Customer Churn Distribution")plt.show()
+
+
+
+Displays a bar graph showing how many customers stayed and how many left.
+- 0 = Customers stayed.
+- 1 = Customers left.
+This helps us understand the distribution of the target variable.
+Cell 5: Build Neural Network
+model = Sequential([    Dense(16, activation='relu', input_dim=X_train.shape[1]),    Dropout(0.3),    Dense(8, activation='relu'),    Dense(1, activation='sigmoid')])
+
+
+
+This is the most important part of the practical.
+
+We create a Neural Network with three Dense layers.
+Neural Network architecture
+Input data
+
+Customer features
+
+
+Dense Layer – 16 neurons
+
+ReLU activation
+
+
+Dropout – 30%
+
+Reduces overfitting
+
+
+Dense Layer – 8 neurons
+
+ReLU activation
+
+
+Output Layer – 1 neuron
+
+Sigmoid activation
+
+
+Prediction: 0 or 1
+
+Stay or Leave
+
+
+Important terms:
+- Sequential: Creates a model layer by layer.
+- Dense: A fully connected neural network layer.
+- 16 and 8: Number of neurons.
+- ReLU: Activation function used in hidden layers.
+- Dropout(0.3): Randomly turns off 30% of neurons during training to reduce overfitting.
+- Sigmoid: Converts output into a probability between 0 and 1.
+Cell 6: Compile the model
+model.compile(    optimizer='adam',    loss='binary_crossentropy',    metrics=['accuracy'])model.summary()
+
+
+
+This prepares the model for training.
+Term	Meaning
+Adam	Optimizer that updates model weights
+Binary Crossentropy	Loss function for binary classification
+Accuracy	Measures correct predictions
+Model summary	Displays model architecture and parameters
+
+Viva: Why use sigmoid?
+
+Answer: Because we have two output classes, 0 and 1. Sigmoid gives a probability between 0 and 1.
+Cell 7: Train the model
+history = model.fit(    X_train, y_train,    epochs=50,    batch_size=32,    validation_split=0.2,    verbose=1)
+
+
+
+This teaches the neural network using training data.
+- epochs=50: Model goes through the training data 50 times.
+- batch_size=32: Processes 32 records at a time.
+- validation_split=0.2: Uses 20% of training data for validation.
+- verbose=1: Displays training progress.
+Viva: What is an epoch?
+
+Answer: One complete pass of the entire training dataset through the model.
+Cell 8: Plot accuracy and loss
+plt.figure(figsize=(12,5))plt.subplot(1,2,1)plt.plot(history.history['accuracy'], label='Train Accuracy')plt.plot(history.history['val_accuracy'], label='Validation Accuracy')plt.legend()plt.title('Model Accuracy')plt.subplot(1,2,2)plt.plot(history.history['loss'], label='Train Loss')plt.plot(history.history['val_loss'], label='Validation Loss')plt.legend()plt.title('Model Loss')plt.show()
+
+
+
+Displays two graphs:
+1. Accuracy graph: Shows how accurately the model learns.
+2. Loss graph: Shows how much prediction error the model makes.
+Remember:
+- Higher accuracy is generally better.
+- Lower loss is generally better.
+- A large gap between training and validation performance may indicate overfitting.
+Cell 9: Make predictions
+y_pred_prob = model.predict(X_test)y_pred = (y_pred_prob > 0.5).astype(int)
+
+
+
+- model.predict() predicts the probability of a customer leaving.
+- 0.5 is the decision threshold.
+- Probability greater than 0.5 → 1 (customer leaves).
+- Probability less than or equal to 0.5 → 0 (customer stays).
+Example:
+Probability	Prediction
+0.85	1 – Leaves
+0.25	0 – Stays
+0.60	1 – Leaves
+
+Cell 10: Evaluate model performance
+acc = accuracy_score(y_test, y_pred)prec = precision_score(y_test, y_pred)rec = recall_score(y_test, y_pred)f1 = f1_score(y_test, y_pred)print("Accuracy:", acc)print("Precision:", prec)print("Recall:", rec)print("F1-Score:", f1)print(classification_report(y_test, y_pred))
+
+
+
+These metrics check how well the model performs.
+Metric	Easy meaning
+Accuracy	How many predictions are correct
+Precision	Out of predicted customers leaving, how many actually left
+Recall	Out of actual customers who left, how many were identified
+F1-score	Balance between precision and recall
+
+Your output:
+- Accuracy = 86.3%
+- Precision = 72.6%
+- Recall = 48.6%
+- F1-score = 58.2%
+Important: Accuracy is good, but recall is comparatively low. The model misses some customers who actually leave.
+Cell 11: Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')plt.xlabel('Predicted')plt.ylabel('Actual')plt.title('Confusion Matrix')plt.show()
+
+
+
+A confusion matrix shows correct and incorrect predictions.
+Term	Meaning
+TP	Correctly predicted customer leaving
+TN	Correctly predicted customer staying
+FP	Predicted leaving, but actually stayed
+FN	Predicted staying, but actually left
+
+Viva: Why do we use a confusion matrix?
+
+Answer: To understand how many predictions are correct and incorrect for each class.
+Cell 12: ROC Curve and AUC
+from sklearn.metrics import roc_curve, roc_auc_scorefpr, tpr, _ = roc_curve(y_test, y_pred_prob)roc_auc = roc_auc_score(y_test, y_pred_prob)plt.plot(fpr, tpr, label='AUC = %.3f' % roc_auc)plt.plot([0,1], [0,1], linestyle='--')plt.xlabel('False Positive Rate')plt.ylabel('True Positive Rate')plt.title('ROC Curve')plt.legend()plt.show()
+
+
+
+- roc_curve() calculates FPR and TPR.
+- roc_auc_score() calculates the AUC value.
+- plt.plot() draws the ROC curve.
+- Dashed line represents random guessing.
+Viva: What is ROC?
+
+Answer: Receiver Operating Characteristic. It is a graph used to evaluate a classification model.
+
+Viva: What is AUC?
+
+Answer: Area Under the Curve. It measures how well a model distinguishes between two classes.
+
+4. Most important viva questions
+These are the questions you should prepare for your practical exam.
+Question	Answer
+What is churn?	When a customer leaves a company or service.
+What is a Neural Network?	A model inspired by the human brain that learns patterns from data.
+What is Deep Learning?	A type of ML that uses neural networks with multiple layers.
+What is classification?	Predicting categories or classes.
+What is binary classification?	Classification with two classes, such as 0 and 1.
+What is ReLU?	An activation function that converts negative values to zero.
+What is Sigmoid?	An activation function that gives output between 0 and 1.
+What is Dropout?	A technique to reduce overfitting.
+What is overfitting?	When a model performs well on training data but poorly on new data.
+What is StandardScaler?	A technique to standardize numerical features.
+What is Adam?	An optimization algorithm.
+What is an epoch?	One complete pass through training data.
+What is batch size?	Number of records processed at a time.
+What is binary crossentropy?	Loss function used for binary classification.
+What is AUC?	Area Under the ROC Curve.
+
+5. Important things to remember before your practical
+Quick revision
+- Dataset: 10,000 customers.
+- Target column: Exited.
+- Input: Customer details.
+- Output: 0 or 1.
+- Train-test split: 80:20.
+- Neural Network: 16 and 8 hidden neurons.
+- Activation: ReLU and Sigmoid.
+- Dropout: 0.3.
+- Epochs: 50.
+- Batch size: 32.
+- Optimizer: Adam.
+- Loss: Binary Crossentropy.
+- Evaluation: Accuracy, Precision, Recall, F1, Confusion Matrix and ROC-AUC.
+
+One technical improvement: In your current code, scaling happens before train-test splitting. For a more correct ML workflow, split the data first, then fit StandardScaler only on X_train and transform X_test. This avoids data leakage.
